@@ -1,0 +1,22 @@
+todo
+.env
+node_modules
+dist
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+**/.claude/settings.local.json
+
+target
+*.sqlite
+*.db
+*.db-shm
+*.db-wal

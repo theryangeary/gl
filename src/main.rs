@@ -3,7 +3,10 @@ mod handlers;
 mod models;
 
 use axum::{
-    http::{header, StatusCode, Uri}, response::{Html, IntoResponse, Response}, routing::{delete, get, post, put}, Json, Router
+    http::{header, StatusCode, Uri},
+    response::{Html, IntoResponse, Response},
+    routing::{delete, get, post, put},
+    Json, Router,
 };
 use std::{env, sync::Arc};
 use tower_http::{cors::CorsLayer, trace::TraceLayer};
@@ -11,8 +14,8 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 use database::Database;
 use handlers::{
-    create_entry, delete_entry, get_categories, get_entries, grocery, reorder_categories,
-    reorder_entries, update_entry, create_category, update_category, delete_category, category,
+    category, create_category, create_entry, delete_category, delete_entry, get_categories,
+    get_entries, grocery, reorder_categories, reorder_entries, update_category, update_entry,
 };
 use rust_embed::Embed;
 
@@ -29,7 +32,8 @@ async fn main() -> anyhow::Result<()> {
     tracing_subscriber::registry()
         .with(
             tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| {
-                "grocery_list_backend=debug,tower_http=debug,axum::rejection=trace,sqlx=debug".into()
+                "grocery_list_backend=debug,tower_http=debug,axum::rejection=trace,sqlx=debug"
+                    .into()
             }),
         )
         .with(
@@ -37,19 +41,26 @@ async fn main() -> anyhow::Result<()> {
                 .with_target(true)
                 .with_level(true)
                 .with_thread_ids(true)
-                .pretty() // Makes it more readable
+                .pretty(), // Makes it more readable
         )
         .init();
 
     let database_url = env::var("DATABASE_URL").unwrap_or_else(|_| "sqlite:grocery.db".to_string());
     let port = env::var("PORT").unwrap_or_else(|_| "3001".to_string());
 
+    let is_demo = std::env::var("GL_DEMO")
+        .unwrap_or_else(|_| "false".to_string())
+        .parse::<bool>()
+        .unwrap_or(false);
+
     tracing::info!("Starting grocery list backend on port {}", port);
     tracing::info!("Database URL: {}", database_url);
+    tracing::info!("Gl is running in demo mode: {}", is_demo);
 
     let db = Arc::new(Database::new(&database_url).await?);
 
-    let app = Router::new().fallback(static_handler)
+    let app = Router::new()
+        .fallback(static_handler)
         .route("/api/entries", get(get_entries))
         .route("/api/entries", post(create_entry))
         .route("/api/entries/:id", put(update_entry))
@@ -61,12 +72,14 @@ async fn main() -> anyhow::Result<()> {
         .route("/api/categories/:id", put(update_category))
         .route("/api/categories/:id", delete(delete_category))
         .route("/api/categories/reorder", put(reorder_categories))
-        .route("/api/categories/suggestions", get(category::get_suggestions))
+        .route(
+            "/api/categories/suggestions",
+            get(category::get_suggestions),
+        )
         .route("/health", get(health_check))
         .layer(TraceLayer::new_for_http())
         .layer(CorsLayer::permissive())
         .with_state(db);
-
 
     let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{}", port)).await?;
     tracing::info!("Grocery List API server running on port {}", port);
@@ -84,35 +97,46 @@ async fn health_check() -> Result<Json<serde_json::Value>, StatusCode> {
 }
 
 async fn static_handler(uri: Uri) -> impl IntoResponse {
-  let path = uri.path().trim_start_matches('/');
+    let path = uri.path().trim_start_matches('/');
 
-  if path.is_empty() || path == INDEX_HTML {
-    return index_html().await;
-  }
-
-  match Assets::get(path) {
-    Some(content) => {
-      let mime = mime_guess::from_path(path).first_or_octet_stream();
-
-      ([(header::CONTENT_TYPE, mime.as_ref())], content.data).into_response()
+    if path.is_empty() || path == INDEX_HTML {
+        return index_html().await;
     }
-    None => {
-      if path.contains('.') {
-        return not_found().await;
-      }
 
-      index_html().await
+    match Assets::get(path) {
+        Some(content) => {
+            let mime = mime_guess::from_path(path).first_or_octet_stream();
+
+            ([(header::CONTENT_TYPE, mime.as_ref())], content.data).into_response()
+        }
+        None => {
+            if path.contains('.') {
+                return not_found().await;
+            }
+
+            index_html().await
+        }
     }
-  }
 }
 
 async fn index_html() -> Response {
-  match Assets::get(INDEX_HTML) {
-    Some(content) => Html(content.data).into_response(),
-    None => not_found().await,
-  }
+    match Assets::get(INDEX_HTML) {
+        Some(content) => {
+            let is_demo = std::env::var("GL_DEMO")
+                .unwrap_or_else(|_| "false".to_string())
+                .parse::<bool>()
+                .unwrap_or(false);
+
+            let template =
+                String::from_utf8(content.data.to_vec()).expect("index should be valid utf-8");
+
+            let index = template.replace("__IS_DEMO__", &is_demo.to_string());
+            Html(index).into_response()
+        }
+        None => not_found().await,
+    }
 }
 
 async fn not_found() -> Response {
-  (StatusCode::NOT_FOUND, "404").into_response()
+    (StatusCode::NOT_FOUND, "404").into_response()
 }
