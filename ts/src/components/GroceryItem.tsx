@@ -1,4 +1,3 @@
-import AsyncCreatableSelect from 'react-select/async-creatable';
 
 import { useState } from 'react';
 import type { GroceryListEntry } from '../types/grocery';
@@ -7,8 +6,6 @@ interface GroceryItemProps {
   item: GroceryListEntry
   onUpdate: (id: number, updates: Partial<GroceryListEntry>) => void
   onDelete: (id: number) => void
-  onFetchSuggestions: (query: string) => Promise<string[]>
-  autoFocus?: boolean
   dragHandleProps: any
 }
 
@@ -16,8 +13,6 @@ export default function GroceryItem({
   item,
   onUpdate,
   onDelete,
-  onFetchSuggestions,
-  autoFocus = false,
   dragHandleProps,
 }: GroceryItemProps) {
   const [checked, setChecked] = useState(item.completed);
@@ -25,10 +20,6 @@ export default function GroceryItem({
   var fullLabel = `${item.quantity} ${item.description}`
   if (item.notes.length > 0) {
     fullLabel += ` (${item.notes})`;
-  }
-
-  const handleDescriptionChange = (newDescription: string) => {
-    onUpdate(item.id, { description: newDescription })
   }
 
   const handleCheckboxChange = (completed: boolean) => {
@@ -56,25 +47,7 @@ export default function GroceryItem({
         className="w-4 h-4"
       />
       <div className="flex-1">
-        <AsyncCreatableSelect
-          value={{ label: fullLabel, value: fullLabel }}
-          loadOptions={async (inputValue: string) => {
-            const suggestions = await onFetchSuggestions(inputValue)
-            return suggestions.map(s => ({ label: s, value: s }))
-          }}
-          onChange={(option) => {
-            if (option) {
-              const newDescription = option.value.toLowerCase()
-              handleDescriptionChange(newDescription)
-            }
-          }}
-          onCreateOption={(inputValue: string) => {
-            handleDescriptionChange(inputValue.toLowerCase())
-          }}
-          placeholder="Add item..."
-          isClearable={false}
-          autoFocus={autoFocus}
-        />
+        <p>{fullLabel}</p>
       </div>
       <button
          onClick={handleDelete}

@@ -10,8 +10,6 @@ export default function SortableGroceryItem({
     entry,
     onUpdate,
     onDelete,
-    autoFocus,
-    onFetchSuggestions,
 }: {
     entry: GroceryListEntry
     onUpdate: (id: number, updates: Partial<GroceryListEntry>) => void
@@ -49,12 +47,10 @@ export default function SortableGroceryItem({
                 item={entry}
                 onUpdate={onUpdate}
                 onDelete={onDelete}
-                autoFocus={autoFocus}
                 dragHandleProps={{
                     ...listeners,
                     ...attributes,
                 }}
-                onFetchSuggestions={onFetchSuggestions}
             />
         </div>
     )

@@ -316,7 +316,6 @@ export default function GroceryList({
         <GroceryItem
           item={item}
           onDelete={groceryListRepository.deleteEntry}
-          onFetchSuggestions={groceryListRepository.fetchSuggestions}
           onUpdate={groceryListRepository.updateEntry}
           dragHandleProps={undefined} />
       ) : null
