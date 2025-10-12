@@ -1,7 +1,7 @@
 # build frontend
 FROM node:24 as frontend
 WORKDIR /app
-COPY gl/ts .
+COPY ts .
 RUN npm install
 RUN npm run build
 
@@ -12,8 +12,8 @@ WORKDIR /app
 # generate chef plan
 FROM chef AS planner
 
-COPY gl/Cargo.toml gl/Cargo.lock ./
-COPY gl/src ./src
+COPY Cargo.toml Cargo.lock ./
+COPY src ./src
 
 RUN cargo chef prepare --recipe-path recipe.json
 
@@ -23,9 +23,9 @@ COPY --from=planner /app/recipe.json recipe.json
 
 RUN cargo chef cook --release --recipe-path recipe.json
 
-COPY gl/Cargo.toml gl/Cargo.lock ./
-COPY gl/src ./src
-COPY gl/migrations ./migrations
+COPY Cargo.toml Cargo.lock ./
+COPY src ./src
+COPY migrations ./migrations
 COPY --from=frontend /app/dist ./ts/dist
 
 RUN cargo build --release
