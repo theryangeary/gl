@@ -50,7 +50,7 @@ function App() {
           </div>
         )}
 
-      <div className="max-w-md mx-auto p-4"> 
+      <div className="max-w-md mx-auto p-4 pt-0"> 
 
         <Dialog id='1' open={isOpen} onClose={closeModal}>
           <div className="fixed inset-0 bg-black/30" />
