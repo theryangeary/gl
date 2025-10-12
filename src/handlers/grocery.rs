@@ -17,7 +17,7 @@ pub struct SuggestionsQuery {
 }
 
 fn parse_entry_input(input: &str) -> (String, String, String) {
-    let quantity_regex = regex::Regex::new(r"^(\d+[a-z]*)\s+(.+)$").unwrap();
+    let quantity_regex = regex::Regex::new(r"^(\.?\d+[a-z0-9\.]*)\s+(.+)$").unwrap();
 
     if let Some(captures) = quantity_regex.captures(input.trim()) {
         let quantity = captures.get(1).unwrap().as_str().to_string();
@@ -234,5 +234,29 @@ pub async fn get_suggestions(
             tracing::error!("Failed to get suggestions: {}", e);
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn test_parse_entry_input(input: &str, expected: (&str, &str, &str)) {
+        let actual = parse_entry_input(input);
+        assert_eq!((expected.0.to_owned(), expected.1.to_owned(), expected.2.to_owned()), actual);
+    }
+
+    #[test]
+    fn test_inputs() {
+        test_parse_entry_input("2lb chicken", ("2lb", "chicken", ""));
+        test_parse_entry_input("2 chicken", ("2", "chicken", ""));
+        test_parse_entry_input("2lb chicken thighs", ("2lb", "chicken thighs", ""));
+        test_parse_entry_input("2lb chicken thighs (boneless)", ("2lb", "chicken thighs", "boneless"));
+        test_parse_entry_input("2lb chicken - skinless", ("2lb", "chicken", "skinless"));
+        test_parse_entry_input("2.5lb chicken", ("2.5lb", "chicken", ""));
+        test_parse_entry_input(".5lb chicken", (".5lb", "chicken", ""));
+        test_parse_entry_input("2.25lb carrot", ("2.25lb", "carrot", ""));
+        test_parse_entry_input(".carrot", ("", ".carrot", ""));
+        test_parse_entry_input("2.carrot", ("", "2.carrot", ""));
     }
 }
