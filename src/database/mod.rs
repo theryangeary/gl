@@ -19,7 +19,7 @@ use constants::*;
 use tracing::log;
 
 pub struct Database {
-    pool: SqlitePool,
+    pub pool: SqlitePool,
 }
 
 impl Database {
@@ -29,7 +29,7 @@ impl Database {
         }
 
         let options =
-            SqliteConnectOptions::from_str(database_url)?.log_statements(log::LevelFilter::Trace);
+            SqliteConnectOptions::from_str(database_url)?.log_statements(log::LevelFilter::Trace).foreign_keys(true);
 
         let pool = SqlitePool::connect_with(options).await?;
 
