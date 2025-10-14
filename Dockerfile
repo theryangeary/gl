@@ -40,6 +40,7 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 COPY --from=builder /app/target/release/grocery-list-backend ./grocery-list-backend
+COPY grocery_demo.db /app/grocery_demo.db
 
 EXPOSE 3001
 
