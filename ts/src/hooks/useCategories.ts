@@ -16,7 +16,7 @@ export type CategoryRepository = {
 }
 
 
-export function useCategories(): CategoryRepository {
+export function useCategories(onError: (e: Error) => void): CategoryRepository {
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -30,9 +30,11 @@ export function useCategories(): CategoryRepository {
         console.error('API request failed:', response.status, response.statusText)
         const text = await response.text()
         console.error('Response body:', text)
+        onError(new Error(`Failed to fetch categories: ${response.status} ${response.statusText}`))
       }
     } catch (error) {
       console.error('Failed to fetch categories:', error)
+      onError(error instanceof Error ? error : new Error('Failed to fetch categories'))
     } finally {
       setLoading(false)
     }
@@ -52,6 +54,7 @@ export function useCategories(): CategoryRepository {
       }
     } catch (error) {
       console.error('Failed to create category:', error)
+      onError(error instanceof Error ? error : new Error('Failed to create category'))
     }
   }, [])
 
@@ -68,6 +71,7 @@ export function useCategories(): CategoryRepository {
       }
     } catch (error) {
       console.error('Failed to update category:', error)
+      onError(error instanceof Error ? error : new Error('Failed to update category'))
     }
   }, [])
 
@@ -81,6 +85,7 @@ export function useCategories(): CategoryRepository {
       }
     } catch (error) {
       console.error('Failed to delete category:', error)
+      onError(error instanceof Error ? error : new Error('Failed to delete category'))
     }
   }, [])
 
@@ -95,6 +100,7 @@ export function useCategories(): CategoryRepository {
       })
     } catch (error) {
       console.error('Failed to reorder categories:', error)
+      onError(error instanceof Error ? error : new Error('Failed to reorder categories'))
     }
     fetchCategories()
   }
@@ -111,10 +117,12 @@ export function useCategories(): CategoryRepository {
         return data
       } else {
         console.error('Failed to fetch suggestions:', response.status, response.statusText)
+        onError(new Error(`Failed to fetch suggestions: ${response.status} ${response.statusText}`))
         return []
       }
     } catch (error) {
       console.error('Failed to fetch suggestions:', error)
+      onError(error instanceof Error ? error : new Error('Failed to fetch suggestions'))
       return []
     }
   }, [])

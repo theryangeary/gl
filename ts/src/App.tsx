@@ -17,10 +17,7 @@ function App() {
   const [isOpen, setIsOpen] = useState(false);
   const [error, setError] = useState('');
 
-  const groceryListRepository = useGroceryList();
-  const categoryRepository = useCategories();
-
-  const onExecuteError = (e: Error) => {
+  const onError = (e: Error) => {
     setError(`${e}`);
     setIsOpen(true);
   }
@@ -29,6 +26,9 @@ function App() {
     setIsOpen(false)
     setError('')
   }
+
+  const groceryListRepository = useGroceryList(onError);
+  const categoryRepository = useCategories(onError);
 
   const isDemo = window.APP_CONFIG.isDemo;
 
@@ -65,7 +65,7 @@ function App() {
         <Console
           groceryListRepository={groceryListRepository}
           categoryRepository={categoryRepository}
-          onExecuteError={onExecuteError}
+          onExecuteError={onError}
         />
         <div className="flex">
           <div className="flex flex-1"></div>

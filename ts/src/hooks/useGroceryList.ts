@@ -14,7 +14,7 @@ export type GroceryListRepository = {
   getByLabel: (label: string) => GroceryListEntry | undefined,
 }
 
-export function useGroceryList(): GroceryListRepository {
+export function useGroceryList(onError: (e: Error) => void): GroceryListRepository {
   const [entries, setEntries] = useState<GroceryListEntry[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -28,9 +28,11 @@ export function useGroceryList(): GroceryListRepository {
         console.error('API request failed:', response.status, response.statusText)
         const text = await response.text()
         console.error('Response body:', text)
+        onError(new Error(`Failed to fetch entries: ${response.status} ${response.statusText}`))
       }
     } catch (error) {
       console.error('Failed to fetch entries:', error)
+      onError(error instanceof Error ? error : new Error('Failed to fetch entries'))
     } finally {
       setLoading(false)
     }
@@ -50,6 +52,7 @@ export function useGroceryList(): GroceryListRepository {
       }
     } catch (error) {
       console.error('Failed to create entry:', error)
+      onError(error instanceof Error ? error : new Error('Failed to create entry'))
     }
   }, [])
 
@@ -66,6 +69,7 @@ export function useGroceryList(): GroceryListRepository {
       }
     } catch (error) {
       console.error('Failed to update entry:', error)
+      onError(error instanceof Error ? error : new Error('Failed to update entry'))
     }
   }, [])
 
@@ -79,6 +83,7 @@ export function useGroceryList(): GroceryListRepository {
       }
     } catch (error) {
       console.error('Failed to delete entry:', error)
+      onError(error instanceof Error ? error : new Error('Failed to delete entry'))
     }
   }, [])
 
@@ -99,6 +104,7 @@ export function useGroceryList(): GroceryListRepository {
       })
     } catch (error) {
       console.error('Failed to reorder entries:', error)
+      onError(error instanceof Error ? error : new Error('Failed to reorder entries'))
     }
     fetchEntries()
   }
@@ -119,6 +125,7 @@ export function useGroceryList(): GroceryListRepository {
       }
     } catch (error) {
       console.error('Failed to fetch suggestions:', error)
+      onError(error instanceof Error ? error : new Error('Failed to fetch suggestions'))
       return []
     }
   }, [])
