@@ -690,7 +690,8 @@ impl Database {
             SET 
                 {GROCERY_LIST_ENTRIES_ARCHIVED_AT} = CURRENT_TIMESTAMP,
                 {GROCERY_LIST_ENTRIES_POSITION} = NULL
-            WHERE {GROCERY_LIST_ENTRIES_COMPLETED_AT} < datetime('now','-1 day')"
+            WHERE {GROCERY_LIST_ENTRIES_COMPLETED_AT} < datetime('now','-1 day')
+            AND {GROCERY_LIST_ENTRIES_ARCHIVED_AT} IS NULL"
         ))
         .execute(&self.pool)
         .await?;
