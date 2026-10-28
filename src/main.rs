@@ -36,7 +36,7 @@ async fn main() -> anyhow::Result<()> {
     tracing_subscriber::registry()
         .with(
             tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| {
-                "grocery_list_backend=debug,tower_http=debug,axum::rejection=trace,sqlx=debug"
+                "grocery_list_backend=debug,tower_http=info,axum::rejection=trace,sqlx=debug"
                     .into()
             }),
         )
@@ -45,7 +45,6 @@ async fn main() -> anyhow::Result<()> {
                 .with_target(true)
                 .with_level(true)
                 .with_thread_ids(true)
-                .pretty(), // Makes it more readable
         )
         .init();
 
